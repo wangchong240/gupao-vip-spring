@@ -1,0 +1,42 @@
+<application>
+  <component name="FindSettings">
+    <option name="customScope" value="All Places" />
+    <option name="defaultScopeName" value="All Places" />
+    <option name="localRegularExpressions" value="true" />
+    <option name="LOCAL_REGULAR_EXPRESSIONS" value="true" />
+    <option name="WITH_SUBDIRECTORIES" value="false" />
+    <option name="SEARCH_SCOPE" value="All Places" />
+    <recentFileMasks>
+      <mask>*.pom</mask>
+      <mask>*pom</mask>
+      <mask>*pom.</mask>
+      <mask>*pom.x</mask>
+      <mask>*pom.xm</mask>
+      <mask>*pom.xml</mask>
+      <mask>j</mask>
+      <mask>j'a</mask>
+      <mask>j'a'v</mask>
+      <mask>java</mask>
+      <mask>*.cs</mask>
+      <mask>*.x</mask>
+      <mask>*.c</mask>
+      <mask>*.xm</mask>
+      <mask>*.xml</mask>
+      <mask>*.css</mask>
+      <mask>*.jas</mask>
+      <mask>*.javas</mask>
+      <mask>*.j's</mask>
+      <mask>*.j's'p</mask>
+      <mask>*.inc</mask>
+      <mask>*.in</mask>
+      <mask>*.i</mask>
+      <mask>*.</mask>
+      <mask>*.java</mask>
+      <mask>*.jav</mask>
+      <mask>*.ja</mask>
+      <mask>*.j</mask>
+      <mask>*.jsp</mask>
+      <mask>*.js</mask>
+    </recentFileMasks>
+  </component>
+</application>

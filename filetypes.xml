@@ -1,0 +1,10 @@
+<application>
+  <component name="FileTypeManager" version="17">
+    <ignoreFiles list="*.classpath;*.hprof;*.idea;*.iml;*.project;*.pyc;*.pyo;*.rbc;*.springBeans;*.yarb;*~;.DS_Store;.bpmn;.git;.hg;.mvn;.settings;.svn;CVS;__pycache__;_svn;mvnw;mvnw.cmd;out;target;vssver.scc;vssver2.scc;" />
+    <extensionMap>
+      <mapping pattern="department" type="PLAIN_TEXT" />
+      <mapping pattern="sign-work-date.js" type="PLAIN_TEXT" />
+      <mapping pattern="contentList_depts.jsp" type="PLAIN_TEXT" />
+    </extensionMap>
+  </component>
+</application>

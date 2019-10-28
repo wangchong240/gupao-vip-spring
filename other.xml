@@ -1,0 +1,41 @@
+<application>
+  <component name="NodeJsLocalInterpreters">
+    <local-interpreter path="D:/Program Files/nodejs/node.exe">
+      <version-cache version="10.1.0" last-modified="1525802416000" />
+      <npm-package value="D:/Program Files/nodejs/node_modules/npm" />
+    </local-interpreter>
+  </component>
+  <component name="SvnApplicationSettings">
+    <option name="myCheckoutURLs">
+      <list>
+        <option value="svn://118.190.76.87/gzw/" />
+        <option value="svn://118.190.76.87/sd_ms/code/" />
+        <option value="svn://118.190.76.87/code" />
+        <option value="svn://118.190.76.87/gzw/GovPlatform" />
+      </list>
+    </option>
+    <option name="myTypedURLs">
+      <list>
+        <option value="svn://118.190.76.87/gzw/" />
+        <option value="svn://118.190.76.87/sd_ms/code/" />
+        <option value="svn://118.190.76.87/sd_ms/code/sourcecode" />
+        <option value="svn://118.190.76.87/code" />
+        <option value="svn://118.190.76.87/gzw/GovPlatform" />
+      </list>
+    </option>
+    <option name="mySvnCommandLine" value="C:\Program Files\SlikSvn\bin\svn.exe" />
+  </component>
+  <component name="SvnBranchMapperManager">
+    <option name="myMapping">
+      <map>
+        <entry key="svn://118.190.76.87/gzw/GovPlatform">
+          <value>
+            <set>
+              <option value="E:\eclipse_workspace_service\GovPlatform" />
+            </set>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+</application>
