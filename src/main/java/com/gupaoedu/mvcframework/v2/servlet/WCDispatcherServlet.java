@@ -69,6 +69,13 @@ public class WCDispatcherServlet extends HttpServlet {
      * 依赖注入
      */
     private void doAutowired() {
+
+        if(ioc.isEmpty()) {return ;}
+        //容器初始化所有的类的字段，进行依赖注入
+        for(Map.Entry entry : ioc.entrySet()) {
+
+            //
+        }
     }
 
     /**
