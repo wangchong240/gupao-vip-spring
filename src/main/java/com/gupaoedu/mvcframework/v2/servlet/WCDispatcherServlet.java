@@ -1,5 +1,8 @@
 package com.gupaoedu.mvcframework.v2.servlet;
 
+import com.gupaoedu.mvcframework.annotation.WCController;
+import com.gupaoedu.mvcframework.annotation.WCService;
+
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -9,9 +12,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * @author Wang Chong at 2019-10-28 21:12
@@ -24,6 +25,9 @@ public class WCDispatcherServlet extends HttpServlet {
 
     //存储所有扫描类的名字
     private List<String> classNames = new ArrayList<>();
+
+    //暂时用HashMap当ioc容器
+    private Map<String, Object> ioc = new HashMap<>();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -71,6 +75,58 @@ public class WCDispatcherServlet extends HttpServlet {
      * 初始化类，并放入容器中
      */
     private void doInstance() {
+        if(classNames.isEmpty()) {return;}
+
+        try{
+            for(String name : classNames) {
+                Class clazz = Class.forName(name);
+                //controller初始化
+                boolean isInitController = clazz.isAnnotationPresent(WCController.class);
+                if(isInitController) {
+                   String beanName = toLowerFirstCase(clazz.getSimpleName());
+                   Object instance = clazz.newInstance();
+                   ioc.put(beanName, instance);
+                   continue;
+                }
+                //service初始化，需要考虑：1.自定义beanName;2.controller以类型注入
+                boolean isInitService = clazz.isAnnotationPresent(WCService.class);
+                if(isInitService) {
+                    //自定义beanName
+                    WCService wcService = (WCService) clazz.getAnnotation(WCService.class);
+                    String beanName = wcService.value();
+                    if("".equals(beanName.trim())) {
+                        beanName = toLowerFirstCase(clazz.getSimpleName());
+                    }
+                    Object instance = clazz.newInstance();
+                    ioc.put(beanName, instance);
+                    //获取类的接口，将接口名字作为key，便于按类型注入
+                    for(Class i : clazz.getInterfaces()) {
+                        if(ioc.containsKey(i.getName())) {
+                            throw new Exception("The “" + i.getName() + "“ is exist!!");
+                        }
+                        ioc.put(i.getName(), instance);
+                    }
+                }
+
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+    }
+
+    /**
+     * 首字母转小写：规定只能传入驼峰命名
+     * @param simpleName 类的名字
+     */
+    private String toLowerFirstCase(String simpleName) {
+        char[] chars = simpleName.toCharArray();
+        //判断首字母是否大写
+        boolean isCap = (chars[0] >= 65 && chars[0] <= 90);
+        if(isCap) {
+            chars[0] += 32;
+        }
+        return String.valueOf(chars);
     }
 
     /**
