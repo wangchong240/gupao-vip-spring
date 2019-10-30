@@ -1,6 +1,8 @@
 package com.gupaoedu.mvcframework.v2.servlet;
 
+import com.gupaoedu.mvcframework.annotation.WCAutowired;
 import com.gupaoedu.mvcframework.annotation.WCController;
+import com.gupaoedu.mvcframework.annotation.WCRequestMapping;
 import com.gupaoedu.mvcframework.annotation.WCService;
 
 import javax.servlet.ServletConfig;
@@ -11,6 +13,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.*;
 
@@ -28,6 +32,9 @@ public class WCDispatcherServlet extends HttpServlet {
 
     //暂时用HashMap当ioc容器
     private Map<String, Object> ioc = new HashMap<>();
+
+    //路径映射容器
+    private Map<String, Method> handlerMapping = new HashMap<>();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -63,18 +70,75 @@ public class WCDispatcherServlet extends HttpServlet {
      * 初始化HandlerMapping
      */
     private void initHandlerMapping() {
+        if(ioc.isEmpty()) {return ;}
+        for(Map.Entry entry : ioc.entrySet()) {
+            //实例对象
+            Object instance = entry.getValue();
+            Class clazz = instance.getClass();
+            if(!clazz.isAnnotationPresent(WCController.class)) {continue;}
+            //基础url，类上的RequestMapping
+            String baseUrl = "";
+            if(clazz.isAnnotationPresent(WCRequestMapping.class)) {
+                WCRequestMapping requestMapping = (WCRequestMapping) clazz.getAnnotation(WCRequestMapping.class);
+                baseUrl = requestMapping.value();
+            }
+            //拼接url，放入【路径映射容器】
+            Method[] methods = clazz.getMethods();
+            this.doHandlerMapping(methods, baseUrl);
+        }
+    }
+
+    /**
+     * 拼接url，放入【路径映射容器】
+     * @param methods controller类中所有方法
+     * @param baseUrl 基础路径
+     */
+    private void doHandlerMapping(Method[] methods,  String baseUrl) {
+        for(Method method : methods) {
+            if(!method.isAnnotationPresent(WCRequestMapping.class)) {continue;}
+            WCRequestMapping requestMapping = method.getAnnotation(WCRequestMapping.class);
+            String url = requestMapping.value();
+            url = ("/" + baseUrl + "/" + url).replaceAll("/+", "/");
+            handlerMapping.put(url, method);
+            System.out.println("Mapped :" + url + method);
+        }
     }
 
     /**
      * 依赖注入
      */
     private void doAutowired() {
-
+        //容器非空判断
         if(ioc.isEmpty()) {return ;}
-        //容器初始化所有的类的字段，进行依赖注入
+        //初始化容器所有的类的字段，进行依赖注入
         for(Map.Entry entry : ioc.entrySet()) {
+            Object instance = entry.getValue();
+            Field[] fields = instance.getClass().getDeclaredFields();
+            //依赖注入
+            this.autowiredHandler(fields, instance);
+        }
+    }
 
-            //
+    /**
+     * 遍历类中的成员变量，进行依赖注入
+     * @param fields 类中的所有成员变量
+     * @param instance 容器中的实例对象
+     */
+    private void autowiredHandler(Field[] fields, Object instance) {
+        for(Field field : fields) {
+            if(!field.isAnnotationPresent(WCAutowired.class)) {continue;}
+            WCAutowired wcAutowired = field.getAnnotation(WCAutowired.class);
+            field.setAccessible(true);
+            //获取beanName
+            String beanName = wcAutowired.value();
+            if("".equals(beanName.trim())) {
+                beanName = field.getName();
+            }
+            try {
+                field.set(instance, ioc.get(beanName));
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -154,11 +218,11 @@ public class WCDispatcherServlet extends HttpServlet {
             if (file1.isDirectory()) {
                 doScanner(scanPackage + "." + file1.getName());
             } else {
-                if (!file1.getName().equals(".class")) {
+                if (!file1.getName().endsWith(".class")) {
                     continue;
                 }
                 String className = file1.getName().replaceAll(".class", "");
-                classNames.add(className);
+                classNames.add(scanPackage + "." + className);
             }
         }
     }
