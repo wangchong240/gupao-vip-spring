@@ -1,9 +1,6 @@
 package com.gupaoedu.mvcframework.v2.servlet;
 
-import com.gupaoedu.mvcframework.annotation.WCAutowired;
-import com.gupaoedu.mvcframework.annotation.WCController;
-import com.gupaoedu.mvcframework.annotation.WCRequestMapping;
-import com.gupaoedu.mvcframework.annotation.WCService;
+import com.gupaoedu.mvcframework.annotation.*;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -15,6 +12,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.net.URL;
 import java.util.*;
 
@@ -43,10 +41,103 @@ public class WCDispatcherServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        doDispatch(req, resp);
+        try {
+            doDispatch(req, resp);
+        } catch (Exception e) {
+            e.printStackTrace();
+            resp.getWriter().write("500 Execution, Detail" + Arrays.toString(e.getStackTrace()));
+        }
     }
 
-    private void doDispatch(HttpServletRequest req, HttpServletResponse resp) {
+    /**
+     * 根据uri做请求委派
+     * @param req 请求参数
+     * @param resp 响应参数
+     */
+    private void doDispatch(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+        //请求全路径
+        String url = req.getRequestURI();
+        String contextPath = req.getContextPath();
+        url = url.replaceAll(contextPath, "").replaceAll("/+", "/");
+        //404情况
+        if(!handlerMapping.containsKey(url)) {
+            resp.getWriter().write("404 Not Found!!!");
+            return ;
+        }
+        //执行方法
+        Method method = handlerMapping.get(url);
+        String beanName = toLowerFirstCase(method.getDeclaringClass().getSimpleName());
+        Object instance = ioc.get(beanName);
+        //方法形参列表
+        Parameter[] parameters = method.getParameters();
+        //请求参数与方法形参映射
+        Object[] paramValues = new Object[parameters.length];
+        this.parameterMapping(req, resp, parameters, paramValues);
+        //方法委派调用
+        method.invoke(instance, paramValues);
+    }
+
+    /**
+     * 请求参数与方法形参列表映射
+     * @param req 请求
+     * @param resp 响应
+     * @param parameters 方法形参列表
+     * @param paramValues 与方法形参对应的入参值
+     */
+    private void parameterMapping(HttpServletRequest req, HttpServletResponse resp, Parameter[] parameters, Object[] paramValues) {
+        Map<String, String[]> parameterMap = req.getParameterMap();
+        //请求参数
+       for(int i = 0; i < parameters.length; i++) {
+           Class parameterType = parameters[i].getType();
+           if(parameterType == HttpServletRequest.class) {
+               paramValues[i] = req;
+               continue;
+           }
+           if(parameterType == HttpServletResponse.class) {
+               paramValues[i] = resp;
+               continue;
+           }
+           //获取实参key
+           String parameterName = this.getRealParamKey(parameters[i]);
+           //实参数组处理
+           String value = Arrays.toString(parameterMap.get(parameterName))
+                   .replaceAll("\\[|\\]","")
+                   .replaceAll("\\s",",");
+           //类型转换,实参与形参映射
+           paramValues[i] = this.covertType(parameterType, value);
+       }
+    }
+
+    /**
+     * 实参类型转换
+     * @param parameterType 形参类型
+     * @param value 实参转换类型的值
+     */
+    private Object covertType(Class parameterType, String value) {
+        if(String.class == parameterType) {
+            return value;
+        }
+        if(Integer.class == parameterType) {
+            return Integer.valueOf(value);
+        }
+
+        return null;
+    }
+
+    /**
+     * 获取实参key
+     * @param parameter 方法参数对象
+     */
+    private String getRealParamKey(Parameter parameter) {
+        String parameterName =  parameter.getName();
+        boolean isAnno = parameter.isAnnotationPresent(WCRequestParam.class);
+        if(isAnno) {
+            WCRequestParam requestParam = parameter.getAnnotation(WCRequestParam.class);
+            if(!"".equals(requestParam.value().trim())) {
+                parameterName = requestParam.value().trim();
+            }
+        }
+        return parameterName;
     }
 
     @Override
