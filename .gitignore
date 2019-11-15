@@ -5,6 +5,9 @@ ehthumbs_vista.db
 
 # Folder config file
 Desktop.ini
+*.idea
+*.iml
+target
 
 # Recycle Bin used on file shares
 $RECYCLE.BIN/
