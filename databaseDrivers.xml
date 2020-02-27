@@ -9,7 +9,7 @@
       <option name="auto-sync" value="false" />
     </driver>
     <driver id="oracle">
-      <artifact name="Oracle" use="true" version="12.1.0.2" />
+      <artifact name="Oracle" use="true" version="12.2.0.1" />
       <option name="auto-sync" value="true" />
       <option name="auto-commit" value="false" />
       <option name="send-app-info" value="true" />
